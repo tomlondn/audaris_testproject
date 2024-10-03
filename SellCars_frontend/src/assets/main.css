@@ -1,0 +1,157 @@
+@import "./base.css";
+
+#app {
+  margin: 0 auto;
+  padding: 0;
+  font-weight: normal;
+}
+
+.loginWrapper {
+  width: 100vw;
+  height: 100vh;
+  place-items: center;
+  display: inline-grid;
+  font-size: 1.5em;
+  background-color: #4b4b4b;
+}
+.loginWrapper form {
+  display: block;
+}
+.loginWrapper form button {
+  position: relative;
+  left: calc(100% - 100px);
+  width: 100px;
+  letter-spacing: 1px;
+  background-color: var(--vt-c-blue);
+  color: #ffffff;
+  padding: 3px 0;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.loginWrapper .container {
+  box-sizing: border-box;
+  padding: 1em 4em;
+  border: 1px solid red;
+  background-color: #f0f0f0;
+  color: black;
+}
+.loginWrapper .container .loginError {
+  font-size: 0.5em;
+  color: red;
+}
+.loginWrapper .container header {
+  font-size: 0.75em;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 2em;
+}
+
+input#userPassword {
+  margin-top: 1em;
+}
+
+input {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  outline: none;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+.customerpage-wrapper {
+  display: grid;
+  grid-template-columns: 2fr 10fr;
+  height: 80vh;
+}
+.customerpage-wrapper .cutomer-file-uploads,
+.customerpage-wrapper .customer-overview,
+.loggedInUser {
+  padding: 0.75em;
+  box-sizing: border-box;
+}
+.loggedInUser .lastLogin {
+  font-size: 0.5em;
+}
+.customerpage-wrapper .customer-overview {
+  color: black;
+  background-color: white;
+}
+.customerpage-wrapper .customer-overview #customerSearch {
+  border: 1px solid darkgrey;
+  max-width: 100%;
+}
+.fileUpload {
+  display: none;
+}
+.customerpage-headline {
+  font-size: 1em;
+  margin-bottom: 0.75em;
+}
+
+.upload-container {
+  height: 200px;
+  background-color: var(--vt-c-white);
+  color: var(--vt-c-blue);
+  font-size: 0.75em;
+  text-align: center;
+  margin: 0 0 1em 0;
+  display: block;
+  z-index: 10000;
+  position: relative;
+  cursor: pointer;
+}
+.upload-container .uploadDesc {
+  padding: 1em;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+@media (max-width: 1350px) {
+  .customerpage-wrapper {
+    display: grid;
+    grid-template-columns: 4fr 10fr;
+    height: 85vh;
+  }
+}
+
+@media (max-width: 700px) {
+  .customerpage-wrapper {
+    display: block;
+    grid-template-columns: 4fr 10fr;
+    height: 100vh;
+  }
+  .upload-container {
+    width: 80%;
+    margin: auto auto 1em auto;
+    height: 100px;
+  }
+}
+@media (max-width: 500px) {
+  .upload-container {
+    width: 100%;
+    margin: 0 0 1em 0;
+  }
+}
