@@ -37,14 +37,14 @@ function readUploadFile(e) {
     );
     const csvFields = csvCellsPerLine[0];
 
-    console.log(csvCellsPerLine);
-
     const parsedCsvData = csvCellsPerLine.slice(1).map((column) => {
       return csvFields.reduce((obj, field, index) => {
         obj[field] = column[index];
         return obj;
       }, {});
     });
+
+    console.log(parsedCsvData)
 
     // Data Validation ( E-Mail, Fax, Phone)
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -67,7 +67,7 @@ function readUploadFile(e) {
     // handle Final check to perform upload to api Endpoint
     function handlePerformUpload(validationFields, endpoint) {
       if (validateData(validationFields)) {
-        //axios.post(`${apiUploadEndpoint}${endpoint}`, parsedCsvData);
+        axios.post(`${apiUploadEndpoint}${endpoint}`, parsedCsvData);
 
         alert("Upload Erfolgreich durchgeführt");
       } else {

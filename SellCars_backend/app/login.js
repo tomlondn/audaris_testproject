@@ -1,30 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const db = require("./db");
 
 router.use(cookieParser());
 
 // Secret key for JWT
 const JWT_SECRET = process.env.JWT_SECRET || "super_secret_key";
-
-// create Database connection
-const db = mysql.createConnection({
-  host: "localhost",
-  port: "3306",
-  user: "root",
-  password: "example",
-  database: "mydb",
-});
-
-// connect to database
-db.connect((err) => {
-  if (err) {
-    console.error("Fehler bei der Verbindung zur Datenbank:", err);
-    return;
-  }
-});
 
 // Middleware to authenticate the user by verifying the JWT
 const authenticateToken = (req, res, next) => {
