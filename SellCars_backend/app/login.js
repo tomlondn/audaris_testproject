@@ -31,17 +31,18 @@ router.get("/", (req, res) => {
 });
 
 // Login route
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const { email, password: enteredPasswordHash } = req.body;
+  let dbConnection;
 
-  // select user login data from the database
-  const query =
-    "SELECT password_hash, first_name, last_name  FROM `backend_admin` WHERE email = ?"; // Hier auch die Spalten anpassen
-  db.query(query, [email], (err, dbLoginData) => {
-    if (err) {
-      console.error("Fehler bei der Abfrage:", err);
-      return res.status(500).json({ message: "Interner Serverfehler" });
-    }
+  try {
+    dbConnection = await db.getConnection();
+
+    // select user login data from the database
+    const query =
+      "SELECT password_hash, first_name, last_name  FROM `backend_admin` WHERE email = ?"; // Hier auch die Spalten anpassen
+
+    const [dbLoginData] = await dbConnection.query(query, [email]);
 
     // Validate login
     const isAuthUser =
@@ -50,51 +51,45 @@ router.post("/", (req, res) => {
 
     if (isAuthUser) {
       // Update "updatet_at" after login validation
-
       const updateQuery =
         "UPDATE `backend_admin` SET updatet_at = NOW() WHERE email = ?";
-      db.query(updateQuery, [email], (err) => {
-        if (err) {
-          console.error("Fehler bei der Abfrage:", err);
-          return res.status(500).json({ message: "Interner Serverfehler" });
-        }
 
-        // get userData after Update(get new Updatet login Datetime)
-        const dataQuery =
-          "SELECT first_name, last_name, CONVERT_TZ(updatet_at, '+00:00', 'Europe/Berlin') AS updatet_at FROM `backend_admin` WHERE email = ?";
+      await dbConnection.query(updateQuery, [email]);
 
-        db.query(dataQuery, [email], (err, userData) => {
-          if (err) {
-            console.error("Fehler bei der Abfrage:", err);
-            return res.status(500).json({ message: "Interner Serverfehler" });
-          }
+      // get userData after Update(get new Updatet login Datetime)
+      const dataQuery =
+        "SELECT first_name, last_name, CONVERT_TZ(updatet_at, '+00:00', 'Europe/Berlin') AS updatet_at FROM `backend_admin` WHERE email = ?";
 
-          console.log(userData[0]);
+      const [userData] = await dbConnection.query(dataQuery, [email]);
 
-          const fullName = `${userData[0].first_name} ${userData[0].last_name}`;
+      console.log(userData[0]);
+      const fullName = `${userData[0].first_name} ${userData[0].last_name}`;
 
-          // Create JWT Token
-          const token = jwt.sign(
-            { lastLogin: userData[0].updatet_at, username: fullName },
-            JWT_SECRET,
-            { expiresIn: "1y" }
-          );
+      // Create JWT Token
+      const token = jwt.sign(
+        { lastLogin: userData[0].updatet_at, username: fullName },
+        JWT_SECRET,
+        { expiresIn: "1y" }
+      );
 
-          // Create cookie
-          res.cookie("login", token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-          });
-
-          return res.status(200).json({ message: "Login OK" });
-        });
+      // Create cookie
+      res.cookie("login", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
       });
+
+      return res.status(200).json({ message: "Login OK" });
     } else {
       return res.status(403).json({ message: "Falsch Login Daten" });
     }
-  });
+  } catch (error) {
+    console.error("Fehler bei der Datenbankabfrage oder Verarbeitung:", error);
+    return res.status(500).json({ message: "Interner Serverfehler" });
+  } finally {
+    dbConnection.release();
+  }
 });
 
 // GET-Route for Token Authentification

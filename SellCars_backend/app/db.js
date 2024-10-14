@@ -1,7 +1,7 @@
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 
-// MySQL Connection Config
-const db = mysql.createConnection({
+// MySQL Connection
+const db = mysql.createPool({
   host: "localhost",
   // host: "mysql",
   port: 3306,
@@ -10,13 +10,17 @@ const db = mysql.createConnection({
   database: "mydb",
 });
 
-// connect to Database
-db.connect((err) => {
-  if (err) {
-    console.error("Fehler bei der Verbindung zur Datenbank: (server.js)", err);
-    return;
+const ceckConnect = async () => {
+  try {
+    const connection = await db.getConnection();
+    await connection.query("SELECT 1");
+    console.log("Erfolgreich mit der MySQL-Datenbank verbunden.");
+    connection.release();
+  } catch (err) {
+    console.error("Fehler bei der Verbindung zur Datenbank:", err);
+    throw err;
   }
-  console.log("Erfolgreich mit der MySQL-Datenbank verbunden.");
-});
+};
+ceckConnect();
 
 module.exports = db;

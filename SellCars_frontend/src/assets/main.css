@@ -42,12 +42,8 @@
   background-color: #f0f0f0;
   color: black;
 }
-.loginWrapper .container .loginError {
-  font-size: 0.5em;
-  color: red;
-}
 .loginWrapper .container header {
-  font-size: 0.75em;
+  font-size: 0.55em;
   text-align: center;
   font-weight: bold;
   margin-bottom: 2em;

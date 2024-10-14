@@ -43,7 +43,7 @@ router.beforeEach((to, from, next) => {
       { withCredentials: true }
     )
     .then((response) => {
-      if (response.status == 200) {
+      if (response.status === 200) {
         authStore.toogleLogin(true);
         authStore.setUserData(response.data);
 

@@ -44,8 +44,6 @@ function readUploadFile(e) {
       }, {});
     });
 
-    console.log(parsedCsvData)
-
     // Data Validation ( E-Mail, Fax, Phone)
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const phoneFaxPattern = /^\+?[0-9\s()-]{7,15}$/;
@@ -64,12 +62,17 @@ function readUploadFile(e) {
       });
     }
 
-    // handle Final check to perform upload to api Endpoint
+    // handle final check to perform upload to api Endpoint
     function handlePerformUpload(validationFields, endpoint) {
       if (validateData(validationFields)) {
-        axios.post(`${apiUploadEndpoint}${endpoint}`, parsedCsvData);
-
-        alert("Upload Erfolgreich durchgeführt");
+        axios
+          .post(`${apiUploadEndpoint}${endpoint}`, parsedCsvData)
+          .then((response) => {
+            alert(response.data.message);
+          })
+          .catch((error) => {
+            alert(error.response.data.message);
+          });
       } else {
         alert(
           "Upload Fehlgeschlagen - Falsche Datei oder (Telefonnummer/Fax oder Email in der CSV prüfen)"
@@ -82,19 +85,16 @@ function readUploadFile(e) {
       case "customer":
         handlePerformUpload(
           ["email", "contact_person_email", "phone", "fax", "mobile_phone"],
-          "/customer-insert"
+          "/customers"
         );
         break;
 
       case "addresses":
-        handlePerformUpload(["email", "phone", "fax"], "/addresses-insert");
+        handlePerformUpload(["email", "phone", "fax"], "/addresses");
         break;
 
       case "contact_persons":
-        handlePerformUpload(
-          ["email", "mobile_phone"],
-          "/contact_persons-insert"
-        );
+        handlePerformUpload(["email", "mobile_phone"], "/contacts");
         break;
 
       default:

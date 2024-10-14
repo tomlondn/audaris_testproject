@@ -28,14 +28,14 @@ function tryLogin() {
       if (response.status === 200) {
         userAuthentificationStore.toogleLogin(true);
         router.push("/customer-page");
-
-        alert(response.message);
       }
+
+      console.log(response);
+      alert(response.data.message);
     })
     .catch((error) => {
       userAuthentificationStore.toogleLogin(false);
-      //loginErrorMessage.value = error.response.data.message;
-      //console.log(loginErrorMessage.value);
+      alert(error.response.data.message);
     });
 }
 
@@ -51,8 +51,6 @@ function generateHash(enteredPasswort) {
   <div class="loginWrapper">
     <section class="container">
       <header><h1>SellCars</h1></header>
-
-      <p class="loginError">{{ loginErrorMessage }}</p>
 
       <form @submit="handleSubmit">
         <div>
@@ -72,12 +70,8 @@ function generateHash(enteredPasswort) {
             placeholder="Password"
           />
         </div>
-
         <button v-on:click="tryLogin">Login</button>
       </form>
-
-      <p>{{ userAuthentificationStore.loginState }}</p>
-      <p>{{ userAuthentificationStore.isLogin }}</p>
     </section>
   </div>
 </template>
