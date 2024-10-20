@@ -1,7 +1,125 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
+import oneCustomer from "./oneCustomer.vue";
+import axios from "axios";
 
 const customerSearchString = ref("");
+const allCustomer = ref(null);
+const customerEditId = ref(null);
+const customerDelteId = ref(null);
+const isSortOrder = ref("DESC");
+
+function getAllCustomerData() {
+  axios
+    .get("https://localhost:3000/api/customer")
+    .then((response) => {
+      allCustomer.value = response.data;
+    })
+    .catch((error) => {
+      console.log(error.response);
+    });
+}
+
+function editOneCustomer(customerIntnr) {
+  if (customerIntnr === customerEditId.value) {
+    customerEditId.value = null;
+  } else {
+    customerEditId.value = customerIntnr;
+  }
+}
+function deleteOneCustomer(customerIntnr) {
+  if (customerIntnr === customerDelteId.value) {
+    customerDelteId.value = null;
+  } else {
+    customerDelteId.value = customerIntnr;
+  }
+
+  const doDelete = confirm("Wollen sie diesen Kunden wirklich löschen?");
+
+  if (doDelete) {
+    axios
+      .delete(
+        `https://localhost:3000/api/customer/${customerDelteId.value}`,
+        {}
+      )
+      .then((response) => {
+        alert(response.data.message);
+        getAllCustomerData();
+      })
+      .catch((error) => alert(error.response.data.message));
+  }
+}
+
+function columnAscDescSort(e) {
+  const customer = allCustomer.value;
+  const columnToSort = e.target.getAttribute("column_name");
+  const flatenObj = customer.map((c) => {
+    return {
+      intnr: c.intnr,
+      ...c.contact_persons,
+      ...c.addresses,
+    };
+  });
+
+  // Flexible DESC / ASC
+  let sortedArr;
+
+  switch (isSortOrder.value) {
+    case "ASC":
+      sortedArr = flatenObj.sort((a, b) => {
+        const vA = a[columnToSort];
+        const vB = b[columnToSort];
+        console.log("A", vA);
+        console.log("B", vB);
+
+        return vA.localeCompare(vB);
+      });
+      isSortOrder.value = "DESC";
+      break;
+
+    case "DESC":
+      sortedArr = flatenObj.sort((a, b) => {
+        const vA = a[columnToSort];
+        const vB = b[columnToSort];
+        console.log("A", vA);
+        console.log("B", vB);
+
+        return vB.localeCompare(vA);
+      });
+      isSortOrder.value = "ASC";
+      break;
+
+    default:
+      sortedArr = flatenObj.sort((a, b) => {
+        const vA = a[columnToSort];
+        const vB = b[columnToSort];
+        console.log("A", vA);
+        console.log("B", vB);
+
+        return vA.localeCompare(vB);
+      });
+  }
+
+  allCustomer.value = sortedArr.map((c) => {
+    return {
+      intnr: c.intnr,
+      contact_persons: {
+        first_name: c.first_name,
+        last_name: c.last_name,
+      },
+      addresses: {
+        company_name: c.company_name,
+        country: c.country,
+        zip: c.zip,
+        city: c.city,
+        street: c.street,
+      },
+    };
+  });
+}
+onMounted(() => {
+  getAllCustomerData();
+});
 </script>
 <template>
   <section class="customer-overview">
@@ -16,6 +134,90 @@ const customerSearchString = ref("");
         placeholder="Search by all Columns"
         v-model="customerSearchString"
       />
+    </div>
+    <div class="customerList">
+      <div class="overviewHeader">
+        <div
+          @click="columnAscDescSort"
+          column_name="intnr"
+          class="headerCollumn"
+        >
+          #
+        </div>
+        <div
+          @click="columnAscDescSort"
+          column_name="first_name"
+          class="headerCollumn"
+        >
+          First
+        </div>
+        <div
+          @click="columnAscDescSort"
+          column_name="last_name"
+          class="headerCollumn"
+        >
+          Last
+        </div>
+        <div
+          @click="columnAscDescSort"
+          column_name="company_name"
+          class="headerCollumn"
+        >
+          Company Name
+        </div>
+        <div column_name="" class="headerCollumn">Address</div>
+        <div class="headerCollumn">Edit</div>
+        <div column_name="" class="headerCollumn">Delete</div>
+      </div>
+      <div v-if="allCustomer">
+        <oneCustomer
+          v-for="(customer, index) in allCustomer"
+          :evenRow="(index + 1) % 2 === 0"
+          :intnr="{ columnName: 'intnr', columnValue: customer.intnr }"
+          :first_name="{
+            columnName: 'first_name',
+            columnValue: customer.contact_persons.first_name,
+            tableName: 'contact_persons',
+          }"
+          :last_name="{
+            columnName: 'last_name',
+            columnValue: customer.contact_persons.last_name,
+            tableName: 'contact_persons',
+          }"
+          :company_name="{
+            columnName: 'company_name',
+            columnValue: customer.addresses.company_name,
+            tableName: 'addresses',
+          }"
+          :country="{
+            columnName: 'country',
+            columnValue: customer.addresses.country,
+            tableName: 'addresses',
+          }"
+          :zip="{
+            columnName: 'zip',
+            columnValue: customer.addresses.zip,
+            tableName: 'addresses',
+          }"
+          :city="{
+            columnName: 'city',
+            columnValue: customer.addresses.city,
+            tableName: 'addresses',
+          }"
+          :street="{
+            columnName: 'street',
+            columnValue: customer.addresses.street,
+            tableName: 'addresses',
+          }"
+          :isEdit="customer.intnr === customerEditId"
+          :isDelete="customer.intnr === customerDelteId"
+          @edit="editOneCustomer"
+          @delete="deleteOneCustomer"
+          :reloadTable="getAllCustomerData"
+        >
+        </oneCustomer>
+      </div>
+      <div v-else>Loading...</div>
     </div>
   </section>
 </template>

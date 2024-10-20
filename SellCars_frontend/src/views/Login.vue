@@ -10,11 +10,6 @@ const userEmail = ref("");
 const userPassword = ref("");
 
 function tryLogin() {
-  console.log({
-    email: userEmail.value,
-    password: userPassword.value,
-  });
-
   axios
     .post(
       "https://localhost:3000/login",
@@ -30,7 +25,6 @@ function tryLogin() {
         router.push("/customer-page");
       }
 
-      console.log(response);
       alert(response.data.message);
     })
     .catch((error) => {

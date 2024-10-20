@@ -3,9 +3,7 @@ import { RouterLink, RouterView } from "vue-router";
 </script>
 
 <template>
-  <RouterView v-slot="{ Component }">
-    <KeepAlive><component :is="Component"></component></KeepAlive>
-  </RouterView>
+  <RouterView />
 </template>
 
 <style scoped>
