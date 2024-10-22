@@ -6,18 +6,33 @@ import axios from "axios";
 const customerSearchString = ref("");
 const allCustomer = ref(null);
 const customerEditId = ref(null);
-const customerDelteId = ref(null);
+const customerDeleteId = ref(null);
 const isSortOrder = ref("DESC");
+let originalCustomer;
 
 function getAllCustomerData() {
   axios
     .get("https://localhost:3000/api/customer")
     .then((response) => {
       allCustomer.value = response.data;
+      originalCustomer = response.data;
     })
     .catch((error) => {
       console.log(error.response);
     });
+}
+
+function searchInCustomer(e) {
+  customerSearchString.value = e.target.value;
+  const flattCustomerObj = flattenCustomerObj();
+
+  const filteredObj = flattCustomerObj.filter((customer) =>
+    Object.values(customer).some((value) =>
+      value.toLowerCase().includes(customerSearchString.value.toLowerCase())
+    )
+  );
+
+  allCustomer.value = unflattenCustomerObj(filteredObj);
 }
 
 function editOneCustomer(customerIntnr) {
@@ -28,10 +43,10 @@ function editOneCustomer(customerIntnr) {
   }
 }
 function deleteOneCustomer(customerIntnr) {
-  if (customerIntnr === customerDelteId.value) {
-    customerDelteId.value = null;
+  if (customerIntnr === customerDeleteId.value) {
+    customerDeleteId.value = null;
   } else {
-    customerDelteId.value = customerIntnr;
+    customerDeleteId.value = customerIntnr;
   }
 
   const doDelete = confirm("Wollen sie diesen Kunden wirklich löschen?");
@@ -39,7 +54,7 @@ function deleteOneCustomer(customerIntnr) {
   if (doDelete) {
     axios
       .delete(
-        `https://localhost:3000/api/customer/${customerDelteId.value}`,
+        `https://localhost:3000/api/customer/${customerDeleteId.value}`,
         {}
       )
       .then((response) => {
@@ -51,19 +66,8 @@ function deleteOneCustomer(customerIntnr) {
 }
 
 function columnAscDescSort(e) {
-  const customer = allCustomer.value;
   const columnToSort = e.target.getAttribute("column_name");
-  const flatenObj = customer.map((c) => {
-    if (c.addresses.company_name === "") {
-      c.addresses.company_name = "Privatperson";
-    }
-
-    return {
-      intnr: c.intnr,
-      ...c.contact_persons,
-      ...c.addresses,
-    };
-  });
+  const flatenObj = flattenCustomerObj();
 
   // Flexible DESC / ASC
   let sortedArr;
@@ -104,7 +108,26 @@ function columnAscDescSort(e) {
       });
   }
 
-  allCustomer.value = sortedArr.map((c) => {
+  allCustomer.value = unflattenCustomerObj(flatenObj);
+}
+
+function flattenCustomerObj() {
+  const customer = originalCustomer;
+
+  return customer.map((c) => {
+    if (c.addresses.company_name === "") {
+      c.addresses.company_name = "Privatperson";
+    }
+
+    return {
+      intnr: c.intnr,
+      ...c.contact_persons,
+      ...c.addresses,
+    };
+  });
+}
+function unflattenCustomerObj(flattObj) {
+  return flattObj.map((c) => {
     return {
       intnr: c.intnr,
       contact_persons: {
@@ -121,6 +144,7 @@ function columnAscDescSort(e) {
     };
   });
 }
+
 onMounted(() => {
   getAllCustomerData();
 });
@@ -137,7 +161,9 @@ onMounted(() => {
         type="text"
         placeholder="Search by all Columns"
         v-model="customerSearchString"
+        v-on:input="searchInCustomer"
       />
+      {{ customerSearchString }}
     </div>
     <div class="customerList">
       <div class="overviewHeader">
@@ -214,7 +240,7 @@ onMounted(() => {
             tableName: 'addresses',
           }"
           :isEdit="customer.intnr === customerEditId"
-          :isDelete="customer.intnr === customerDelteId"
+          :isDelete="customer.intnr === customerDeleteId"
           @edit="editOneCustomer"
           @delete="deleteOneCustomer"
           :reloadTable="getAllCustomerData"

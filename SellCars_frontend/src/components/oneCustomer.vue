@@ -53,9 +53,9 @@ const props = defineProps({
 
 const cssClass = props.evenRow ? "customer grey" : "customer";
 
-const emit = defineEmits();
+const emit = defineEmits(["edit", "delete"]);
 function closeEdit() {
-  //trigger emited Event "edit" to set the id of edited customer
+  //trigger emited Event "edit"
   emit("edit", props.intnr.columnValue);
 }
 
