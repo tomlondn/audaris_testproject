@@ -63,38 +63,88 @@ function readUploadFile(e) {
     }
 
     // handle final check to perform upload to api Endpoint
-    function handlePerformUpload(validationFields, endpoint) {
-      if (validateData(validationFields)) {
-        axios
-          .post(`${apiUploadEndpoint}${endpoint}`, parsedCsvData)
-          .then((response) => {
-            alert(response.data.message);
-          })
-          .catch((error) => {
-            alert(error.response.data.message);
-          });
+    function handlePerformUpload(validationFields, fieldPattern, endpoint) {
+      const validCsvFields = csvFields.every((field) =>
+        fieldPattern.includes(field)
+      );
+
+      if (validCsvFields && csvFields.length === fieldPattern.length) {
+        if (validateData(validationFields)) {
+          axios
+            .post(`${apiUploadEndpoint}${endpoint}`, parsedCsvData)
+            .then((response) => {
+              alert(response.data.message);
+            })
+            .catch((error) => {
+              alert(error.response.data.message);
+            });
+        } else {
+          alert(
+            "Upload Fehlgeschlagen - Alle Felder, besonders (Telefonnummer/Fax oder Email in der CSV auf Richtigkeit prüfen)"
+          );
+        }
+        target.value = "";
       } else {
-        alert(
-          "Upload Fehlgeschlagen - Falsche Datei oder (Telefonnummer/Fax oder Email in der CSV prüfen)"
-        );
+        alert("Falsche CSV / Falsche CSV Struktur");
       }
-      target.value = "";
     }
 
     switch (fileUploadMode) {
       case "customer":
         handlePerformUpload(
           ["email", "contact_person_email", "phone", "fax", "mobile_phone"],
+          [
+            "intnr",
+            "type",
+            "first_name",
+            "last_name",
+            "contact_person_email",
+            "mobile_phone",
+            "birth_date",
+            "company_name",
+            "country",
+            "city",
+            "zip",
+            "fax",
+            "phone",
+            "street",
+            "email",
+          ],
           "/customers"
         );
         break;
 
       case "addresses":
-        handlePerformUpload(["email", "phone", "fax"], "/addresses");
+        handlePerformUpload(
+          ["email", "phone", "fax"],
+          [
+            "intnr",
+            "company_name",
+            "country",
+            "city",
+            "zip",
+            "fax",
+            "phone",
+            "street",
+            "email",
+          ],
+          "/addresses"
+        );
         break;
 
       case "contact_persons":
-        handlePerformUpload(["email", "mobile_phone"], "/contacts");
+        handlePerformUpload(
+          ["email", "mobile_phone"],
+          [
+            "intnr",
+            "first_name",
+            "last_name",
+            "email",
+            "mobile_phone",
+            "birth_date",
+          ],
+          "/contacts"
+        );
         break;
 
       default:

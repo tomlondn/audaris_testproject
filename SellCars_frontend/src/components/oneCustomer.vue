@@ -61,31 +61,50 @@ function closeEdit() {
 
 function editDataSet(e) {
   const editFields = Array.from(e.target.closest("div").children);
+  const error = {};
 
   const fieldsToEdit = editFields.reduce((obj, field, index) => {
     if (field.tagName.toLowerCase() === "input") {
       const tableColumnName = field.getAttribute("data-table-column");
+      const plzPattern = /^(?=.*[1-9])[0-9]{5}$/;
+
       if (field.value !== props[tableColumnName].columnValue) {
-        obj[tableColumnName] = {
-          value: field.value,
-          table: props[tableColumnName].tableName,
-        };
+        if (tableColumnName === "zip") {
+          if (plzPattern.test(field.value)) {
+            obj[tableColumnName] = {
+              value: field.value,
+              table: props[tableColumnName].tableName,
+            };
+          } else {
+            error.state = true;
+            error.msg = "Keine valide Postleitzahl";
+          }
+        } else {
+          obj[tableColumnName] = {
+            value: field.value,
+            table: props[tableColumnName].tableName,
+          };
+        }
       }
     }
     return obj;
   }, {});
 
-  if (Object.keys(fieldsToEdit).length !== 0) {
-    axios
-      .put(`https://localhost:3000/api/customer/${props.intnr.columnValue}`, {
-        fieldsToEdit,
-      })
-      .then((response) => {
-        alert(response.data.message);
-        closeEdit();
-        props.reloadTable();
-      })
-      .catch((error) => alert(error.response.data.message));
+  if (error.state) {
+    alert(error.msg);
+  } else {
+    if (Object.keys(fieldsToEdit).length !== 0) {
+      axios
+        .put(`https://localhost:3000/api/customer/${props.intnr.columnValue}`, {
+          fieldsToEdit,
+        })
+        .then((response) => {
+          alert(response.data.message);
+          closeEdit();
+          props.reloadTable();
+        })
+        .catch((error) => alert(error.response.data.message));
+    }
   }
 }
 </script>

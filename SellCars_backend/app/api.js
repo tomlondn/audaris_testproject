@@ -122,7 +122,7 @@ router.get("/customer", async (req, res) => {
 
   try {
     // Selct all Customer
-    const allCustomerSelectQuery = `SELECT customer.intnr, contact_persons.first_name, contact_persons.last_name, addresses.company_name, addresses.country, addresses.zip, addresses.city, addresses.street FROM customer LEFT JOIN contact_persons ON customer._id = contact_persons.customer_id LEFT JOIN addresses ON customer._id = addresses.customer_id`;
+    const allCustomerSelectQuery = `SELECT customer.intnr, contact_persons.first_name, contact_persons.last_name, addresses.company_name, addresses.country, addresses.zip, addresses.city, addresses.street FROM customer LEFT JOIN contact_persons ON customer._id = contact_persons.customer_id LEFT JOIN addresses ON customer._id = addresses.customer_id WHERE contact_persons.address_id IS NOT NULL`;
 
     const [customerSelectData] = await dbConnection.query(
       allCustomerSelectQuery
@@ -370,7 +370,7 @@ router.post("/addresses", async (req, res) => {
 
       // check if Address already exists
       const existingAddress = await checkForExistingDataset(
-        "contact_persons",
+        "addresses",
         ["company_name", "street", "zip", "phone", "country"],
         [company_name, street, zip, phone, country]
       );
@@ -396,7 +396,7 @@ router.post("/addresses", async (req, res) => {
 
         // Insert Adress
         const addressQuery =
-          "INSERT INTO addresses (company_name, customer_id, contact_person_id, country, city, zip, fax, phone, street, email) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+          "INSERT INTO addresses (company_name, customer_id, contact_person_id, country, city, zip, fax, phone, street, email) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         await dbConnection.query(addressQuery, [
           company_name,
           linkedCustomer[0]._id,

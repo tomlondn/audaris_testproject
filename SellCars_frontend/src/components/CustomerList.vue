@@ -54,6 +54,10 @@ function columnAscDescSort(e) {
   const customer = allCustomer.value;
   const columnToSort = e.target.getAttribute("column_name");
   const flatenObj = customer.map((c) => {
+    if (c.addresses.company_name === "") {
+      c.addresses.company_name = "Privatperson";
+    }
+
     return {
       intnr: c.intnr,
       ...c.contact_persons,
