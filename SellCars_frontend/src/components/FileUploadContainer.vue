@@ -47,13 +47,22 @@ function readUploadFile(e) {
     // Data Validation ( E-Mail, Fax, Phone)
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const phoneFaxPattern = /^\+?[0-9\s()-]{7,15}$/;
+    const errorValues = [];
 
     function validateData(validationFields) {
-      return parsedCsvData.every((dataObj) => {
+      return parsedCsvData.every((dataObj, index) => {
         return validationFields.every((field) => {
           if (["email", "contact_person_email"].includes(field)) {
+            if (!emailPattern.test(dataObj[field])) {
+              errorValues.push(dataObj[field]);
+            }
+
             return emailPattern.test(dataObj[field]);
           } else if (["phone", "fax", "mobile_phone"].includes(field)) {
+            if (!phoneFaxPattern.test(dataObj[field])) {
+              errorValues.push(dataObj[field]);
+            }
+
             return phoneFaxPattern.test(dataObj[field]);
           } else {
             return true;
@@ -80,7 +89,7 @@ function readUploadFile(e) {
             });
         } else {
           alert(
-            "Upload Fehlgeschlagen - Alle Felder, besonders (Telefonnummer/Fax oder Email in der CSV auf Richtigkeit prüfen)"
+            `Upload Fehlgeschlagen - Falsche Eingabe/n: (${errorValues.join(",")})`
           );
         }
         target.value = "";

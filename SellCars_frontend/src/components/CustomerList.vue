@@ -8,6 +8,7 @@ const allCustomer = ref(null);
 const customerEditId = ref(null);
 const customerDeleteId = ref(null);
 const isSortOrder = ref("DESC");
+// for sorting
 let originalCustomer;
 
 function getAllCustomerData() {
