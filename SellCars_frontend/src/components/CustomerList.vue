@@ -202,29 +202,3 @@ onMounted(() => {
     </div>
   </section>
 </template>
-
-<!-- :country="{
-  columnName: 'country',
-  columnValue: customer.addresses.country,
-  tableName: 'addresses',
-}"
-:zip="{
-  columnName: 'zip',
-  columnValue: customer.addresses.zip,
-  tableName: 'addresses',
-}"
-:city="{
-  columnName: 'city',
-  columnValue: customer.addresses.city,
-  tableName: 'addresses',
-}"
-:street="{
-  columnName: 'street',
-  columnValue: customer.addresses.street,
-  tableName: 'addresses',
-}" 
-:company_name="{
-  columnName: 'company_name',
-  columnValue: customer.addresses.company_name,
-  tableName: 'addresses',
-}"-->

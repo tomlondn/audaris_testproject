@@ -1,3 +1,4 @@
+const path = require("path");
 const fs = require("fs");
 const https = require("https");
 const express = require("express");
@@ -9,8 +10,8 @@ const api = require("./api");
 const app = express();
 
 const options = {
-  key: fs.readFileSync("./cercs/server.key"),
-  cert: fs.readFileSync("./cercs/server.cer"),
+  key: fs.readFileSync(path.join(__dirname, "cercs", "server.key")),
+  cert: fs.readFileSync(path.join(__dirname, "cercs", "server.cer")),
 };
 
 app.use(
