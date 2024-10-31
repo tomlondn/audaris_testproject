@@ -103,41 +103,29 @@ function columnAscDescSort(e) {
       });
   }
 
-  allCustomer.value = unflattenCustomerObj(flatenObj);
+  allCustomer.value = unflattenCustomerObj(sortedArr);
 }
 
 function flattenCustomerObj() {
   const customer = originalCustomer;
 
   return customer.map((c) => {
-    if (c.addresses.company_name === "") {
-      c.addresses.company_name = "Privatperson";
-    }
+    const firstCompanyName = c.addresses[0]?.company_name || "Privatperson";
 
-    return {
+    const newObj = {
       intnr: c.intnr,
-      ...c.contact_persons,
-      ...c.addresses,
+      last_name: c.contact_persons.last_name,
+      first_name: c.contact_persons.first_name,
+      company_name: firstCompanyName,
     };
+
+    return newObj;
   });
 }
 function unflattenCustomerObj(flattObj) {
-  return flattObj.map((c) => {
-    return {
-      intnr: c.intnr,
-      contact_persons: {
-        first_name: c.first_name,
-        last_name: c.last_name,
-      },
-      addresses: {
-        company_name: c.company_name,
-        country: c.country,
-        zip: c.zip,
-        city: c.city,
-        street: c.street,
-      },
-    };
-  });
+  return flattObj.map((obj) =>
+    originalCustomer.find((c) => obj.intnr === c.intnr)
+  );
 }
 
 onMounted(() => {
