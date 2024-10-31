@@ -47,6 +47,7 @@ function readUploadFile(e) {
     // Data Validation ( E-Mail, Fax, Phone)
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const phoneFaxPattern = /^\+?[0-9\s()-]{7,15}$/;
+    const plzPattern = /^(?=.*[1-9])[0-9]{5}$/;
     const errorValues = [];
 
     function validateData(validationFields) {
@@ -64,6 +65,11 @@ function readUploadFile(e) {
             }
 
             return phoneFaxPattern.test(dataObj[field]);
+          } else if (field === "zip") {
+            if (!plzPattern.test(dataObj[field])) {
+              errorValues.push(dataObj[field]);
+            }
+            return plzPattern.test(dataObj[field]);
           } else {
             return true;
           }
@@ -88,9 +94,7 @@ function readUploadFile(e) {
               alert(error.response.data.message);
             });
         } else {
-          alert(
-            `Upload Fehlgeschlagen - Falsche Eingabe/n: (${errorValues.join(",")})`
-          );
+          alert(`Upload Fehlgeschlagen - Falsche Eingabe: (${errorValues[0]})`);
         }
         target.value = "";
       } else {
@@ -101,7 +105,14 @@ function readUploadFile(e) {
     switch (fileUploadMode) {
       case "customer":
         handlePerformUpload(
-          ["email", "contact_person_email", "phone", "fax", "mobile_phone"],
+          [
+            "email",
+            "contact_person_email",
+            "phone",
+            "fax",
+            "mobile_phone",
+            "zip",
+          ],
           [
             "intnr",
             "type",
@@ -125,7 +136,7 @@ function readUploadFile(e) {
 
       case "addresses":
         handlePerformUpload(
-          ["email", "phone", "fax"],
+          ["email", "phone", "fax", "zip"],
           [
             "intnr",
             "company_name",

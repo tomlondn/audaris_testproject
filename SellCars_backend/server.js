@@ -9,8 +9,8 @@ const api = require("./api");
 const app = express();
 
 const options = {
-  key: fs.readFileSync("../cercs/server.key"),
-  cert: fs.readFileSync("../cercs/server.cer"),
+  key: fs.readFileSync("./cercs/server.key"),
+  cert: fs.readFileSync("./cercs/server.cer"),
 };
 
 app.use(

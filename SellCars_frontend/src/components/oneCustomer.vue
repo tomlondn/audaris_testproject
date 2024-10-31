@@ -3,36 +3,24 @@ import axios from "axios";
 
 const props = defineProps({
   intnr: {
-    type: Object,
-    default: "leer",
+    type: String,
+    required: true,
   },
-  first_name: {
+  contact_persons: {
     type: Object,
-    default: "leer",
+    required: true,
   },
-  last_name: {
-    type: Object,
-    default: "leer",
+  addresses: {
+    type: Array,
+    required: true,
+  },
+  evenRow: {
+    type: Boolean,
+    default: false,
   },
   company_name: {
-    type: Object,
-    default: "leer",
-  },
-  country: {
-    type: Object,
-    default: "leer",
-  },
-  zip: {
-    type: Object,
-    default: "leer",
-  },
-  city: {
-    type: Object,
-    default: "leer",
-  },
-  street: {
-    type: Object,
-    default: "leer",
+    type: String,
+    required: true,
   },
   isEdit: {
     type: Boolean,
@@ -42,12 +30,9 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  evenRow: {
-    type: Boolean,
-    default: false,
-  },
   reloadTable: {
     type: Function,
+    required: true,
   },
 });
 
@@ -56,46 +41,70 @@ const cssClass = props.evenRow ? "customer grey" : "customer";
 const emit = defineEmits(["edit", "delete"]);
 function closeEdit() {
   //trigger emited Event "edit"
-  emit("edit", props.intnr.columnValue);
+  emit("edit", props.intnr);
 }
 
 function editDataSet(e) {
-  const editFields = Array.from(e.target.closest("div").children);
+  const editFields = Array.from(
+    e.target.closest("div").querySelectorAll("input")
+  );
   const error = {};
 
   const fieldsToEdit = editFields.reduce((obj, field, index) => {
-    if (field.tagName.toLowerCase() === "input") {
-      const tableColumnName = field.getAttribute("data-table-column");
-      const plzPattern = /^(?=.*[1-9])[0-9]{5}$/;
+    const tableColumnName = field.getAttribute("data-table-column");
+    const plzPattern = /^(?=.*[1-9])[0-9]{5}$/;
+    const addressId = parseInt(field.getAttribute("data-addressId")); // AddressId holen und als Zahl parsen
 
-      if (field.value !== props[tableColumnName].columnValue) {
+    // Prüfen, ob die AddressId vorhanden ist
+    if (addressId) {
+      const address = props.addresses.find(
+        (addr) => addr.address_id === addressId
+      );
+
+      // Falls eine Übereinstimmung für die Adresse gefunden wurde
+      if (address && address[tableColumnName] !== field.value) {
         if (tableColumnName === "zip") {
           if (plzPattern.test(field.value)) {
-            obj[tableColumnName] = {
-              value: field.value,
-              table: props[tableColumnName].tableName,
-            };
+            if (!obj[addressId]) {
+              obj[addressId] = {};
+            }
+
+            obj[addressId][tableColumnName] = field.value;
           } else {
             error.state = true;
             error.msg = "Keine valide Postleitzahl";
           }
         } else {
-          obj[tableColumnName] = {
-            value: field.value,
-            table: props[tableColumnName].tableName,
-          };
+          if (!obj[addressId]) {
+            obj[addressId] = {};
+          }
+
+          obj[addressId][tableColumnName] = field.value;
         }
       }
     }
+
+    // contact Person
+    if (tableColumnName in props.contact_persons) {
+      if (props.contact_persons[tableColumnName] !== field.value) {
+        obj[tableColumnName] = {
+          value: field.value,
+          table: "contact_persons",
+        };
+      }
+    }
+
     return obj;
   }, {});
+
+  console.log(fieldsToEdit);
 
   if (error.state) {
     alert(error.msg);
   } else {
     if (Object.keys(fieldsToEdit).length !== 0) {
       axios
-        .put(`https://localhost:3000/api/customer/${props.intnr.columnValue}`, {
+        .put(`https://localhost:3000/api/customer/${props.intnr}`, {
           fieldsToEdit,
         })
         .then((response) => {
@@ -111,22 +120,27 @@ function editDataSet(e) {
 
 <template>
   <div :class="cssClass">
-    <div class="dataCollumn">{{ intnr.columnValue }}</div>
-    <div class="dataCollumn">{{ first_name.columnValue }}</div>
-    <div class="dataCollumn">{{ last_name.columnValue }}</div>
+    <div class="dataCollumn">{{ intnr }}</div>
+    <div class="dataCollumn">{{ contact_persons.first_name }}</div>
+    <div class="dataCollumn">{{ contact_persons.last_name }}</div>
+
     <div class="dataCollumn">
-      {{ company_name.columnValue ? company_name.columnValue : "Privatperson" }}
+      {{
+        addresses[0].company_name ? addresses[0].company_name : "Privatperson"
+      }}
     </div>
+
     <div class="dataCollumn">
-      {{ country.columnValue }} {{ zip.columnValue }} {{ city.columnValue }}
-      {{ street.columnValue }}
+      <div v-for="(address, index) in addresses">
+        <div>Addresse {{ index + 1 }}:</div>
+        {{ address.country }} {{ address.zip }} {{ address.city }}
+        {{ address.street }}
+      </div>
     </div>
+
+    <div @click="$emit('edit', intnr)" class="dataCollumn editCustomer"></div>
     <div
-      @click="$emit('edit', intnr.columnValue)"
-      class="dataCollumn editCustomer"
-    ></div>
-    <div
-      @click="$emit('delete', intnr.columnValue)"
+      @click="$emit('delete', intnr)"
       class="dataCollumn deleteCustomer"
     ></div>
   </div>
@@ -136,38 +150,55 @@ function editDataSet(e) {
       <input
         data-table-column="first_name"
         type="text"
-        :value="first_name.columnValue"
+        :value="contact_persons.first_name"
       />
+
       <input
-        :data-table-column="last_name.columnName"
+        data-table-column="last_name"
         type="text"
-        :value="last_name.columnValue"
+        :value="contact_persons.last_name"
       />
-      <input
-        :data-table-column="company_name.columnName"
-        type="text"
-        :value="company_name.columnValue"
-      />
-      <input
-        :data-table-column="country.columnName"
-        type="text"
-        :value="country.columnValue"
-      />
-      <input
-        :data-table-column="zip.columnName"
-        type="text"
-        :value="zip.columnValue"
-      />
-      <input
-        :data-table-column="city.columnName"
-        type="text"
-        :value="city.columnValue"
-      />
-      <input
-        :data-table-column="street.columnName"
-        type="text"
-        :value="street.columnValue"
-      />
+
+      <div
+        v-for="(
+          { company_name, country, zip, city, street, address_id }, index
+        ) in addresses"
+      >
+        <br />Adresse {{ index + 1 }}<br />
+        <input
+          :data-addressId="address_id"
+          data-table-column="company_name"
+          type="text"
+          :value="company_name"
+        />
+
+        <input
+          :data-addressId="address_id"
+          data-table-column="country"
+          type="text"
+          :value="country"
+        />
+
+        <input
+          :data-addressId="address_id"
+          data-table-column="zip"
+          type="text"
+          :value="zip"
+        />
+        <input
+          :data-addressId="address_id"
+          data-table-column="city"
+          type="text"
+          :value="city"
+        />
+        <input
+          :data-addressId="address_id"
+          data-table-column="street"
+          type="text"
+          :value="street"
+        />
+      </div>
+
       <button v-on:click="editDataSet">Speichern</button>
       <button v-on:click="closeEdit" class="closeEdit">Abbrechen</button>
     </div>

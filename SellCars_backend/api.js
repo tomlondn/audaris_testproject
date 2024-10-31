@@ -122,30 +122,39 @@ router.get("/customer", async (req, res) => {
 
   try {
     // Selct all Customer
-    const allCustomerSelectQuery = `SELECT customer.intnr, contact_persons.first_name, contact_persons.last_name, addresses.company_name, addresses.country, addresses.zip, addresses.city, addresses.street FROM customer LEFT JOIN contact_persons ON customer._id = contact_persons.customer_id LEFT JOIN addresses ON customer._id = addresses.customer_id WHERE contact_persons.address_id IS NOT NULL`;
+    const allCustomerSelectQuery = `SELECT customer.intnr, contact_persons.first_name, contact_persons.last_name, addresses.company_name, addresses._id as address_id , addresses.country, addresses.zip, addresses.city, addresses.street FROM customer LEFT JOIN contact_persons ON customer._id = contact_persons.customer_id LEFT JOIN addresses ON customer._id = addresses.customer_id WHERE contact_persons.address_id IS NOT NULL`;
 
     const [customerSelectData] = await dbConnection.query(
       allCustomerSelectQuery
     );
 
-    customerData = customerSelectData.map((customer) => {
-      return {
-        intnr: customer.intnr,
-        contact_persons: {
-          first_name: customer.first_name,
-          last_name: customer.last_name,
-        },
-        addresses: {
-          company_name: customer.company_name,
-          country: customer.country,
-          zip: customer.zip,
-          city: customer.city,
-          street: customer.street,
-        },
-      };
-    });
+    const customerData = customerSelectData.reduce((acc, customer) => {
+      const intnr = customer.intnr;
 
-    res.status(200).json(customerData);
+      if (!acc[intnr]) {
+        acc[intnr] = {
+          intnr: intnr,
+          contact_persons: {
+            first_name: customer.first_name,
+            last_name: customer.last_name,
+          },
+          addresses: [],
+        };
+      }
+
+      acc[intnr].addresses.push({
+        country: customer.country,
+        zip: customer.zip,
+        city: customer.city,
+        street: customer.street,
+        address_id: customer.address_id,
+        company_name: customer.company_name,
+      });
+
+      return acc;
+    }, {});
+
+    res.status(200).json(Object.values(customerData));
   } catch (error) {
     res.status(500).json({
       message:
@@ -173,30 +182,29 @@ router.put("/customer/:id", async (req, res) => {
     ]);
 
     if (existingCustomer.length > 0) {
-      // tables sorted Object
-      const updatesByTable = {};
+      const customerId = existingCustomer[0]._id;
 
-      Object.keys(allFieldsToUpdate).forEach((column) => {
-        const { value, table } = allFieldsToUpdate[column];
+      for (const key in allFieldsToUpdate) {
+        const fieldData = allFieldsToUpdate[key];
 
-        if (!updatesByTable[table]) {
-          updatesByTable[table] = {};
+        if (parseInt(key)) {
+          const addressId = key;
+          const tableFieldsToUpdateSet = Object.keys(fieldData)
+            .map((field) => `${field} = ?`)
+            .join(", ");
+          const updateValues = Object.values(fieldData);
+          const setQueryValues = [...updateValues, addressId];
+
+          const updateQuary = `UPDATE addresses SET ${tableFieldsToUpdateSet} WHERE _id = ?`;
+          await dbConnection.query(updateQuary, setQueryValues);
+        } else {
+          const { value, table } = fieldData;
+          const setQueryValues = [value, customerId];
+
+          const updateQuary = `UPDATE ${table} SET ${key} = ? WHERE customer_id = ?`;
+
+          await dbConnection.query(updateQuary, setQueryValues);
         }
-
-        updatesByTable[table][column] = value;
-      });
-
-      for (const table of Object.keys(updatesByTable)) {
-        const updateValues = Object.values(updatesByTable[table]);
-        const updateCollumns = Object.keys(updatesByTable[table]);
-
-        const tableFieldsToUpdateSet = updateCollumns
-          .map((field) => `${field} = ?`)
-          .join(", ");
-
-        const setQueryValues = [...updateValues, existingCustomer[0]._id];
-        const updateQuary = `UPDATE ${table} SET ${tableFieldsToUpdateSet} WHERE customer_id = ?`;
-        await dbConnection.query(updateQuary, setQueryValues);
       }
 
       // save update timestamp

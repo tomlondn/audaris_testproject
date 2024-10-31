@@ -78,8 +78,6 @@ function columnAscDescSort(e) {
       sortedArr = flatenObj.sort((a, b) => {
         const vA = a[columnToSort];
         const vB = b[columnToSort];
-        console.log("A", vA);
-        console.log("B", vB);
 
         return vA.localeCompare(vB);
       });
@@ -90,8 +88,6 @@ function columnAscDescSort(e) {
       sortedArr = flatenObj.sort((a, b) => {
         const vA = a[columnToSort];
         const vB = b[columnToSort];
-        console.log("A", vA);
-        console.log("B", vB);
 
         return vB.localeCompare(vA);
       });
@@ -102,8 +98,6 @@ function columnAscDescSort(e) {
       sortedArr = flatenObj.sort((a, b) => {
         const vA = a[columnToSort];
         const vB = b[columnToSort];
-        console.log("A", vA);
-        console.log("B", vB);
 
         return vA.localeCompare(vB);
       });
@@ -204,42 +198,10 @@ onMounted(() => {
         <oneCustomer
           v-for="(customer, index) in allCustomer"
           :evenRow="(index + 1) % 2 === 0"
-          :intnr="{ columnName: 'intnr', columnValue: customer.intnr }"
-          :first_name="{
-            columnName: 'first_name',
-            columnValue: customer.contact_persons.first_name,
-            tableName: 'contact_persons',
-          }"
-          :last_name="{
-            columnName: 'last_name',
-            columnValue: customer.contact_persons.last_name,
-            tableName: 'contact_persons',
-          }"
-          :company_name="{
-            columnName: 'company_name',
-            columnValue: customer.addresses.company_name,
-            tableName: 'addresses',
-          }"
-          :country="{
-            columnName: 'country',
-            columnValue: customer.addresses.country,
-            tableName: 'addresses',
-          }"
-          :zip="{
-            columnName: 'zip',
-            columnValue: customer.addresses.zip,
-            tableName: 'addresses',
-          }"
-          :city="{
-            columnName: 'city',
-            columnValue: customer.addresses.city,
-            tableName: 'addresses',
-          }"
-          :street="{
-            columnName: 'street',
-            columnValue: customer.addresses.street,
-            tableName: 'addresses',
-          }"
+          :intnr="customer.intnr"
+          :company_name="customer.company_name"
+          :contact_persons="customer.contact_persons"
+          :addresses="customer.addresses"
           :isEdit="customer.intnr === customerEditId"
           :isDelete="customer.intnr === customerDeleteId"
           @edit="editOneCustomer"
@@ -252,3 +214,29 @@ onMounted(() => {
     </div>
   </section>
 </template>
+
+<!-- :country="{
+  columnName: 'country',
+  columnValue: customer.addresses.country,
+  tableName: 'addresses',
+}"
+:zip="{
+  columnName: 'zip',
+  columnValue: customer.addresses.zip,
+  tableName: 'addresses',
+}"
+:city="{
+  columnName: 'city',
+  columnValue: customer.addresses.city,
+  tableName: 'addresses',
+}"
+:street="{
+  columnName: 'street',
+  columnValue: customer.addresses.street,
+  tableName: 'addresses',
+}" 
+:company_name="{
+  columnName: 'company_name',
+  columnValue: customer.addresses.company_name,
+  tableName: 'addresses',
+}"-->
