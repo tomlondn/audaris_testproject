@@ -119,6 +119,15 @@ function flattenCustomerObj() {
       company_name: firstCompanyName,
     };
 
+    c.addresses.forEach((address, index) => {
+      newObj[`address_${index}_country`] = address.country;
+      newObj[`address_${index}_zip`] = address.zip;
+      newObj[`address_${index}_city`] = address.city;
+      newObj[`address_${index}_street`] = address.street;
+    });
+
+    console.log(newObj);
+
     return newObj;
   });
 }

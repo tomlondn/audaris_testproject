@@ -97,8 +97,6 @@ function editDataSet(e) {
     return obj;
   }, {});
 
-  console.log(fieldsToEdit);
-
   if (error.state) {
     alert(error.msg);
   } else {
@@ -132,7 +130,7 @@ function editDataSet(e) {
 
     <div class="dataCollumn">
       <div v-for="(address, index) in addresses">
-        <div>Addresse {{ index + 1 }}:</div>
+        <div>Adresse {{ index + 1 }}:</div>
         {{ address.country }} {{ address.zip }} {{ address.city }}
         {{ address.street }}
       </div>
