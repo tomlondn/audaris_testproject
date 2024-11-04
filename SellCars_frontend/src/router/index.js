@@ -24,11 +24,6 @@ const router = createRouter({
       name: "Login",
       component: Login,
     },
-    {
-      path: "/practice",
-      name: "practice",
-      component: Parent,
-    },
   ],
 });
 
